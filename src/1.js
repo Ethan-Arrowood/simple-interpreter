@@ -63,4 +63,4 @@ function isDigit (c) {
 	return c >= '0' && c <= '9'
 }
 
-module.exports = Interpreter
+module.exports = { Interpreter }

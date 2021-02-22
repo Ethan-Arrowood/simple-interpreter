@@ -21,8 +21,6 @@ class Interpreter {
 		this.currentChar = this.text[this.pos]
 	}
 
-	// Lexer Code
-
 	error () {
 		throw new Error('Error parsing input')
 	}
@@ -117,4 +115,4 @@ function isSpace (c) {
 	return c === ' '
 }
 
-module.exports = Interpreter
+module.exports = { Interpreter }

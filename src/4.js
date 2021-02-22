@@ -1,5 +1,5 @@
 const INTEGER = 'INTEGER',
-	PLUS = 'PLUS', MINUS = 'MINUS',
+	MUL = 'MUL', DIV = 'DIV',
 	EOF = 'EOF'
 
 class Token {
@@ -13,21 +13,20 @@ class Token {
 	}
 }
 
-class Interpreter {
+class Lexer {
 	constructor (text) {
 		this.text = text
 		this.pos = 0
-		this.currentToken = null
 		this.currentChar = this.text[this.pos]
 	}
 
 	error () {
-		throw new Error('Error parsing input')
+		throw new Error('Invalid character')
 	}
 
 	advance () {
 		this.pos++
-		if (this.pos > this.text.length - 1) {
+		if (this.pos > this.text.length -1) {
 			this.currentChar = null
 		} else {
 			this.currentChar = this.text[this.pos]
@@ -39,7 +38,7 @@ class Interpreter {
 			this.advance()
 		}
 	}
-	
+
 	integer () {
 		let result = ''
 		while (this.currentChar !== null && isDigit(this.currentChar)) {
@@ -59,41 +58,60 @@ class Interpreter {
 			if (isDigit(this.currentChar)) {
 				return new Token(INTEGER, this.integer())
 			}
-			if (this.currentChar === '+') {
+			if (this.currentChar === '*') {
 				this.advance()
-				return new Token(PLUS, '+')
+				return new Token(MUL, '*')
 			}
-			if (this.currentChar === '-') {
+			if (this.currentChar === '/') {
 				this.advance()
-				return new Token(MINUS, '-')
+				return new Token(DIV, '/')
 			}
 			this.error()
 		}
 
 		return new Token(EOF, null)
 	}
+}
+
+class Interpreter {
+	constructor (lexer) {
+		this.lexer = lexer
+		this.currentToken = this.lexer.getNextToken()
+	}
+
+	error () {
+		throw new Error('Error parsing input')
+	}
 
 	eat (tokenType) {
 		if (this.currentToken.type === tokenType) {
-			this.currentToken = this.getNextToken()
+			this.currentToken = this.lexer.getNextToken()
 		} else {
 			this.error()
 		}
 	}
 
+	factor () {
+		const token = this.currentToken
+		this.eat(INTEGER)
+		return token.value
+	}
+
 	expr () {
-		this.currentToken = this.getNextToken()
-		const left = this.currentToken
-		this.eat(INTEGER)
-		const op = this.currentToken
-		if (op.type === PLUS) {
-			this.eat(PLUS)
-		} else {
-			this.eat(MINUS)
+		let result = this.factor()
+
+		while ([MUL, DIV].includes(this.currentToken.type)) {
+			const token = this.currentToken
+			if (token.type === MUL) {
+				this.eat(MUL)
+				result *= this.factor()
+			} else if (token.type === DIV) {
+				this.eat(DIV)
+				result /= this.factor()
+			}
 		}
-		const right = this.currentToken
-		this.eat(INTEGER)
-		return op.type === PLUS ? left.value + right.value : left.value - right.value
+
+		return result
 	}
 }
 
@@ -105,4 +123,4 @@ function isSpace (c) {
 	return c === ' '
 }
 
-module.exports = { Interpreter }
+module.exports = { Lexer, Interpreter }

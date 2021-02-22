@@ -1,6 +1,8 @@
 const readline = require('readline')
 
-const Interpreter = require(`./${process.argv[2]}.js`)
+const N = process.argv[2]
+
+const { Interpreter, Lexer } = require(`./${N}.js`)
 
 const rl = readline.createInterface({
 	input: process.stdin,
@@ -13,9 +15,16 @@ rl.prompt()
 
 rl.on('line', line => {
 	const input = line.trim()
-	const interpreter = new Interpreter(input)
-	const result = interpreter.expr()
-	console.log(result)
+	if (N < 4) {
+		const interpreter = new Interpreter(input)
+		const result = interpreter.expr()
+		console.log(result)
+	} else {
+		const lexer = new Lexer(input)
+		const interpreter = new Interpreter(lexer)
+		const result = interpreter.expr()
+		console.log(result)
+	}
 	rl.prompt()
 }).on('close', () => {
 	process.exit(0)
